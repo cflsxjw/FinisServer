@@ -1,0 +1,6 @@
+{
+  dockerComposeFile: "docker-compose.yml",
+  runServices: ["api", "mariadb", "redis"],
+  service: "api",
+  workspaceFolder: "/workspace"
+}

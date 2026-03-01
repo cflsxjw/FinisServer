@@ -1,0 +1,58 @@
+name: finis
+services:
+  api:
+    image: mcr.microsoft.com/dotnet/sdk:10.0
+    volumes:
+      - ..:/workspace
+    ports:
+      - 8080:8080
+    command: 
+      - sleep infinity
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 5
+        delay: 3s
+        window: 120s
+    networks:
+      - finis-network
+  mariadb:
+    image: mariadb:latest
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    ports:
+      - 3306:3306
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_PASSWORD}
+      MARIADB_DATABASE: finis
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 5
+        delay: 3s
+        window: 120s
+    networks:
+      - finis-network
+  redis:
+    image: redis:latest
+    volumes:
+      - redis-data:/data
+    ports:
+      - 6379:6379
+    command: ["redis-server", "--appendonly", "yes"]
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 5
+        delay: 3s
+        window: 120s
+    networks:
+      - finis-network
+volumes:
+  mariadb-data:
+  redis-data:
+networks:
+  finis-network:
+    name: finis-network
+    external: true
+  
