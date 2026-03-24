@@ -1,4 +1,5 @@
 using FinisServer.Models.Entities;
+using FinisServer.Models.Enums;
 
 namespace FinisServer.Models.Dtos;
 

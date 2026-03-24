@@ -8,14 +8,17 @@
 
     <ItemGroup>
         <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
+        <PackageReference Include="Markdig" Version="1.1.1" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.3" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.2"/>
         <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.3" />
-        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
+        <PackageReference Include="OpenAI" Version="2.9.1" />
+        <PackageReference Include="Pgvector.EntityFrameworkCore" Version="0.3.0" />
         <PackageReference Include="Scalar.AspNetCore.Microsoft" Version="2.12.46" />
     </ItemGroup>
 
     <ItemGroup>
+      <Folder Include="Configurations\Options\BackgroundTasks\" />
       <Folder Include="Resources\" />
       <Folder Include="Configurations\Authentication\" />
       <Folder Include="StringConstants\" />

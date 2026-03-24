@@ -1,19 +1,31 @@
+using FinisServer.Configurations.Database;
 using FinisServer.Models;
 using FinisServer.Models.Exceptions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Storage;
 
 namespace FinisServer.Services.Impl;
 
 
-public class ResourceService(IWebHostEnvironment webHostEnvironment) : IResourceService
+public class ResourceService(IWebHostEnvironment webHostEnvironment, FinisDbContext finisDbContext) : IResourceService
 {
     
-    public string GetAvatar(string filename)
+    public string GetAvatar(int id)
     {
-        string path = Path.Combine(webHostEnvironment.ContentRootPath, "Resources", filename);
-        if (!File.Exists(path))
+        string filename = finisDbContext.Users.FirstOrDefault(u => u.Id == id)?.Avatar
+                          ?? throw new ResourceNotFoundException("未找到请求的资源");
+        string path;
+        if (filename == "DefaultAvatar.jpeg")
         {
-            throw new ResourceNotFoundException("未找到请求的资源");
+            path = Path.Combine(webHostEnvironment.ContentRootPath, "Resources", filename);
+            if (!File.Exists(path))
+            {
+                throw new ResourceNotFoundException("未找到请求的资源");
+            }
+        }
+        else
+        {
+            path = GetImage(filename);
         }
         return path;
     }
@@ -34,9 +46,7 @@ public class ResourceService(IWebHostEnvironment webHostEnvironment) : IResource
         {
             Directory.CreateDirectory(targetFolder);
         }
-
         var fullPath = Path.Combine(targetFolder, newFileName);
-            
         using (var stream = new FileStream(fullPath, FileMode.Create))
         {
             await file.CopyToAsync(stream);
@@ -52,5 +62,10 @@ public class ResourceService(IWebHostEnvironment webHostEnvironment) : IResource
             throw new ResourceNotFoundException("未找到请求的资源");
         }
         return path;
+    }
+
+    public async Task<string> UploadAvatarAsync(IFormFile file)
+    {
+        return await UploadImageAsync(file);
     }
 }

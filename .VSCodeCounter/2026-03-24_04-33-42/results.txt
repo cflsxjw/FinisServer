@@ -1,0 +1,130 @@
+Date : 2026-03-24 04:33:42
+Directory : /workspace
+Total : 76 files,  1923 codes, 144 comments, 259 blanks, all 2326 lines
+
+Languages
++--------------------+------------+------------+------------+------------+------------+
+| language           | files      | code       | comment    | blank      | total      |
++--------------------+------------+------------+------------+------------+------------+
+| C#                 |         66 |      1,726 |        144 |        211 |      2,081 |
+| JSON               |          4 |         61 |          0 |          4 |         65 |
+| YAML               |          1 |         52 |          0 |          2 |         54 |
+| XML                |          2 |         48 |          0 |         12 |         60 |
+| Markdown           |          1 |         29 |          0 |         28 |         57 |
+| JSON with Comments |          1 |          6 |          0 |          1 |          7 |
+| Properties         |          1 |          1 |          0 |          1 |          2 |
++--------------------+------------+------------+------------+------------+------------+
+
+Directories
++--------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                           | files      | code       | comment    | blank      | total      |
++--------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                              |         76 |      1,923 |        144 |        259 |      2,326 |
+| .devcontainer                                                                  |          3 |         59 |          0 |          4 |         63 |
+| FinisServer                                                                    |         69 |      1,722 |        144 |        211 |      2,077 |
+| FinisServer (Files)                                                            |          4 |        171 |         18 |         23 |        212 |
+| FinisServer/Configurations                                                     |          7 |        253 |         26 |         27 |        306 |
+| FinisServer/Configurations (Files)                                             |          1 |         18 |          0 |          2 |         20 |
+| FinisServer/Configurations/Database                                            |          2 |        192 |         26 |          8 |        226 |
+| FinisServer/Configurations/Database (Files)                                    |          1 |        157 |         26 |          6 |        189 |
+| FinisServer/Configurations/Database/Interceptors                               |          1 |         35 |          0 |          2 |         37 |
+| FinisServer/Configurations/Options                                             |          4 |         43 |          0 |         17 |         60 |
+| FinisServer/Controllers                                                        |          4 |        191 |          0 |         24 |        215 |
+| FinisServer/Interfaces                                                         |          1 |          6 |          0 |          2 |          8 |
+| FinisServer/Models                                                             |         40 |        334 |         97 |         81 |        512 |
+| FinisServer/Models (Files)                                                     |          3 |         32 |          0 |          6 |         38 |
+| FinisServer/Models/Dtos                                                        |         18 |        122 |          0 |         33 |        155 |
+| FinisServer/Models/Entities                                                    |         10 |        112 |         97 |         29 |        238 |
+| FinisServer/Models/Enums                                                       |          3 |         37 |          0 |          6 |         43 |
+| FinisServer/Models/Exceptions                                                  |          6 |         31 |          0 |          7 |         38 |
+| FinisServer/Properties                                                         |          1 |         23 |          0 |          1 |         24 |
+| FinisServer/Services                                                           |         12 |        744 |          3 |         53 |        800 |
+| FinisServer/Services (Files)                                                   |          6 |         58 |          0 |         15 |         73 |
+| FinisServer/Services/Impl                                                      |          6 |        686 |          3 |         38 |        727 |
+| FinisServerTest                                                                |          4 |        142 |          0 |         44 |        186 |
+| FinisServerTest (Files)                                                        |          3 |        113 |          0 |         16 |        129 |
+| FinisServerTest/TestResources                                                  |          1 |         29 |          0 |         28 |         57 |
++--------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++--------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| filename                                                                       | language           | code       | comment    | blank      | total      |
++--------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| /workspace/.devcontainer/.env                                                  | Properties         |          1 |          0 |          1 |          2 |
+| /workspace/.devcontainer/devcontainer.json                                     | JSON with Comments |          6 |          0 |          1 |          7 |
+| /workspace/.devcontainer/docker-compose.yml                                    | YAML               |         52 |          0 |          2 |         54 |
+| /workspace/FinisServer/Configurations/Database/FinisDbContext.cs               | C#                 |        157 |         26 |          6 |        189 |
+| /workspace/FinisServer/Configurations/Database/Interceptors/TimeInterceptor.cs | C#                 |         35 |          0 |          2 |         37 |
+| /workspace/FinisServer/Configurations/GlobalExceptionHandler.cs                | C#                 |         18 |          0 |          2 |         20 |
+| /workspace/FinisServer/Configurations/Options/JwtOptions.cs                    | C#                 |         15 |          0 |          6 |         21 |
+| /workspace/FinisServer/Configurations/Options/PostgresOptions.cs               | C#                 |          8 |          0 |          3 |         11 |
+| /workspace/FinisServer/Configurations/Options/QwenOptions.cs                   | C#                 |         10 |          0 |          4 |         14 |
+| /workspace/FinisServer/Configurations/Options/RedisOptions.cs                  | C#                 |         10 |          0 |          4 |         14 |
+| /workspace/FinisServer/Controllers/ArticleController.cs                        | C#                 |         59 |          0 |          9 |         68 |
+| /workspace/FinisServer/Controllers/LargeModelController.cs                     | C#                 |         25 |          0 |          3 |         28 |
+| /workspace/FinisServer/Controllers/ResourceController.cs                       | C#                 |         43 |          0 |          4 |         47 |
+| /workspace/FinisServer/Controllers/UserController.cs                           | C#                 |         64 |          0 |          8 |         72 |
+| /workspace/FinisServer/FinisServer.csproj                                      | XML                |         23 |          0 |          5 |         28 |
+| /workspace/FinisServer/Interfaces/IAuditEntity.cs                              | C#                 |          6 |          0 |          2 |          8 |
+| /workspace/FinisServer/Models/Constants.cs                                     | C#                 |          5 |          0 |          1 |          6 |
+| /workspace/FinisServer/Models/Dtos/ArticleCategoryDto.cs                       | C#                 |          4 |          0 |          2 |          6 |
+| /workspace/FinisServer/Models/Dtos/ArticleDetailDto.cs                         | C#                 |         16 |          0 |          2 |         18 |
+| /workspace/FinisServer/Models/Dtos/ArticleInfoDto.cs                           | C#                 |         16 |          0 |          2 |         18 |
+| /workspace/FinisServer/Models/Dtos/ArticlePostDto.cs                           | C#                 |         13 |          0 |          2 |         15 |
+| /workspace/FinisServer/Models/Dtos/ChatRequestDto.cs                           | C#                 |          2 |          0 |          2 |          4 |
+| /workspace/FinisServer/Models/Dtos/ChatWithArticleRequestDto.cs                | C#                 |          2 |          0 |          2 |          4 |
+| /workspace/FinisServer/Models/Dtos/CommentDetailDto.cs                         | C#                 |         11 |          0 |          1 |         12 |
+| /workspace/FinisServer/Models/Dtos/CommentPostDto.cs                           | C#                 |          8 |          0 |          2 |         10 |
+| /workspace/FinisServer/Models/Dtos/PathDto.cs                                  | C#                 |          2 |          0 |          1 |          3 |
+| /workspace/FinisServer/Models/Dtos/TextEmbeddingPostDto.cs                     | C#                 |          7 |          0 |          4 |         11 |
+| /workspace/FinisServer/Models/Dtos/TextEmbeddingResultDto.cs                   | C#                 |          4 |          0 |          2 |          6 |
+| /workspace/FinisServer/Models/Dtos/TokenCreateDto.cs                           | C#                 |          4 |          0 |          2 |          6 |
+| /workspace/FinisServer/Models/Dtos/TokenDto.cs                                 | C#                 |          2 |          0 |          1 |          3 |
+| /workspace/FinisServer/Models/Dtos/UrlDto.cs                                   | C#                 |          2 |          0 |          1 |          3 |
+| /workspace/FinisServer/Models/Dtos/UserInfoDto.cs                              | C#                 |          2 |          0 |          1 |          3 |
+| /workspace/FinisServer/Models/Dtos/UserLoginDto.cs                             | C#                 |          8 |          0 |          2 |         10 |
+| /workspace/FinisServer/Models/Dtos/UserRegisterDto.cs                          | C#                 |          9 |          0 |          2 |         11 |
+| /workspace/FinisServer/Models/Dtos/UserSettingDto.cs                           | C#                 |         10 |          0 |          2 |         12 |
+| /workspace/FinisServer/Models/Entities/Article.cs                              | C#                 |         20 |         40 |         10 |         70 |
+| /workspace/FinisServer/Models/Entities/ArticleBookmarkRecord.cs                | C#                 |          7 |          0 |          1 |          8 |
+| /workspace/FinisServer/Models/Entities/ArticleContent.cs                       | C#                 |          8 |          0 |          2 |         10 |
+| /workspace/FinisServer/Models/Entities/ArticleLikeRecord.cs                    | C#                 |          9 |          0 |          3 |         12 |
+| /workspace/FinisServer/Models/Entities/ArticleVector.cs                        | C#                 |          8 |          0 |          2 |         10 |
+| /workspace/FinisServer/Models/Entities/Comment.cs                              | C#                 |         17 |          0 |          2 |         19 |
+| /workspace/FinisServer/Models/Entities/CommentLikeRecord.cs                    | C#                 |         10 |          0 |          4 |         14 |
+| /workspace/FinisServer/Models/Entities/FinisJwtClaimTypes.cs                   | C#                 |          6 |          0 |          1 |          7 |
+| /workspace/FinisServer/Models/Entities/User.cs                                 | C#                 |         20 |         57 |          3 |         80 |
+| /workspace/FinisServer/Models/Entities/UserFollowRecord.cs                     | C#                 |          7 |          0 |          1 |          8 |
+| /workspace/FinisServer/Models/Enums/ArticleCategory.cs                         | C#                 |         25 |          0 |          3 |         28 |
+| /workspace/FinisServer/Models/Enums/LikeRecordType.cs                          | C#                 |          6 |          0 |          2 |          8 |
+| /workspace/FinisServer/Models/Enums/UserRole.cs                                | C#                 |          6 |          0 |          1 |          7 |
+| /workspace/FinisServer/Models/Exceptions/AuthenticationException.cs            | C#                 |          6 |          0 |          2 |          8 |
+| /workspace/FinisServer/Models/Exceptions/BusinessException.cs                  | C#                 |          5 |          0 |          1 |          6 |
+| /workspace/FinisServer/Models/Exceptions/FinisException.cs                     | C#                 |          5 |          0 |          1 |          6 |
+| /workspace/FinisServer/Models/Exceptions/HttpContextException.cs               | C#                 |          5 |          0 |          1 |          6 |
+| /workspace/FinisServer/Models/Exceptions/InvalidUploadFileException.cs         | C#                 |          5 |          0 |          1 |          6 |
+| /workspace/FinisServer/Models/Exceptions/ResourceNotFoundException.cs          | C#                 |          5 |          0 |          1 |          6 |
+| /workspace/FinisServer/Models/Extensions.cs                                    | C#                 |         13 |          0 |          2 |         15 |
+| /workspace/FinisServer/Models/Result.cs                                        | C#                 |         14 |          0 |          3 |         17 |
+| /workspace/FinisServer/Program.cs                                              | C#                 |        113 |         18 |         16 |        147 |
+| /workspace/FinisServer/Properties/launchSettings.json                          | JSON               |         23 |          0 |          1 |         24 |
+| /workspace/FinisServer/Services/IArticleService.cs                             | C#                 |         17 |          0 |          4 |         21 |
+| /workspace/FinisServer/Services/IFinisHttpContext.cs                           | C#                 |          5 |          0 |          1 |          6 |
+| /workspace/FinisServer/Services/IQwenService.cs                                | C#                 |          8 |          0 |          2 |         10 |
+| /workspace/FinisServer/Services/IResourceService.cs                            | C#                 |          9 |          0 |          3 |         12 |
+| /workspace/FinisServer/Services/ITokenService.cs                               | C#                 |          7 |          0 |          3 |         10 |
+| /workspace/FinisServer/Services/IUserService.cs                                | C#                 |         12 |          0 |          2 |         14 |
+| /workspace/FinisServer/Services/Impl/ArticleService.cs                         | C#                 |        209 |          2 |          8 |        219 |
+| /workspace/FinisServer/Services/Impl/FinisHttpContext.cs                       | C#                 |         16 |          0 |          2 |         18 |
+| /workspace/FinisServer/Services/Impl/QwenService.cs                            | C#                 |        283 |          1 |          9 |        293 |
+| /workspace/FinisServer/Services/Impl/ResourceService.cs                        | C#                 |         64 |          0 |          7 |         71 |
+| /workspace/FinisServer/Services/Impl/TokenService.cs                           | C#                 |         35 |          0 |          3 |         38 |
+| /workspace/FinisServer/Services/Impl/UserService.cs                            | C#                 |         79 |          0 |          9 |         88 |
+| /workspace/FinisServer/appsettings.Development.json                            | JSON               |          9 |          0 |          1 |         10 |
+| /workspace/FinisServer/appsettings.json                                        | JSON               |         26 |          0 |          1 |         27 |
+| /workspace/FinisServerTest/FinisServerTest.csproj                              | XML                |         25 |          0 |          7 |         32 |
+| /workspace/FinisServerTest/TestResources/Test.md                               | Markdown           |         29 |          0 |         28 |         57 |
+| /workspace/FinisServerTest/UnitTest1.cs                                        | C#                 |         85 |          0 |          8 |         93 |
+| /workspace/FinisServerTest/xunit.runner.json                                   | JSON               |          3 |          0 |          1 |          4 |
+| Total                                                                          |                    |      1,923 |        144 |        259 |      2,326 |
++--------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+

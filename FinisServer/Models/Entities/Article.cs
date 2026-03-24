@@ -1,4 +1,5 @@
 using FinisServer.Interfaces;
+using FinisServer.Models.Enums;
 
 namespace FinisServer.Models.Entities;
 
@@ -18,32 +19,50 @@ public class Article : IAuditEntity
     /// [数据库]非空、最大长度 64
     /// </remarks>
     /// </summary>
-    public string Title { get; set; } = null!;
+    public required string Title { get; set; }
 
     /// <summary>
     /// 文章摘要
     /// <remarks>
-    /// [数据库]非空、最大长度 256
+    /// [数据库]非空、最大长度 128
     /// </remarks>
     /// </summary>
-    public string Summary { get; set; } = null!;
-    
+    public required string Summary { get; set; }
+
+    /// <summary>
+    /// 文章分类
+    /// </summary>
+    public ArticleCategory Category { get; set; }
+
     /// <summary>
     /// 阅读数
     /// </summary>
-    public int ViewCount { get; set; }
+    public int ViewCount { get; set; } = 0;
+
     /// <summary>
     /// 点赞数
     /// </summary>
-    public int LikeCount { get; set; }
+    public int LikeCount { get; set; } = 0;
+
     /// <summary>
-    /// 点踩数
+    /// 收藏数
     /// </summary>
-    public int DislikeCount { get; set; }
+    public int BookmarkCount { get; set; } = 0;
+    /// <summary>
+    ///
+    /// </summary>
+    public int CommentCount { get; set; } = 0;
     /// <summary>
     /// 作者 ID
     /// </summary>
     public int AuthorId { get; set; }
+    /// <summary>
+    /// 封面路径
+    /// [数据库] 最大长度 256
+    /// </summary>
+    public string? CoverPath { get; set; }
+
+
     public DateTimeOffset CreatedTimeOffset { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedTimeOffset { get; set; } = DateTimeOffset.UtcNow;
     public virtual User Author { get; set; } = null!;

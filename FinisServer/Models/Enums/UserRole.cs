@@ -1,4 +1,4 @@
-namespace FinisServer.Models.Entities;
+namespace FinisServer.Models.Enums;
 
 public enum UserRole
 {

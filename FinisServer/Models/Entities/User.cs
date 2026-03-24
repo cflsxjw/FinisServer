@@ -1,4 +1,5 @@
 using FinisServer.Interfaces;
+using FinisServer.Models.Enums;
 
 namespace FinisServer.Models.Entities;
 
@@ -71,4 +72,9 @@ public class User : IAuditEntity
     /// </remarks>
     /// </summary>
     public DateTimeOffset LastActiveTimeOffset { get; set; }
+
+    public int ViewCount { get; set; } = 0;
+    public int LikeCount { get; set; } = 0;
+    public int BookmarkCount { get; set; } = 0;
+    public int ArticleCount { get; set; } = 0;
 }

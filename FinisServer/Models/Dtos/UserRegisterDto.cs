@@ -1,3 +1,11 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace FinisServer.Models.Dtos;
 
-public record UserRegisterDto(string Name, string Email, string Password);
+public record UserRegisterDto(
+    [Required]
+    string Name,
+    [Required]
+    string Email,
+    [Required]
+    string Password);
