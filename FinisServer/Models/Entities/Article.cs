@@ -61,10 +61,13 @@ public class Article : IAuditEntity
     /// [数据库] 最大长度 256
     /// </summary>
     public string? CoverPath { get; set; }
+    public required string[] Keywords { get; set; }
 
 
     public DateTimeOffset CreatedTimeOffset { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedTimeOffset { get; set; } = DateTimeOffset.UtcNow;
+    public bool IsDeletedByAdmin { get; set; } = false;
     public virtual User Author { get; set; } = null!;
     public virtual ArticleContent Content { get; set; } = null!;
+    public virtual ICollection<ArticleVector> ArticleVectors { get; set; }= null!;
 }

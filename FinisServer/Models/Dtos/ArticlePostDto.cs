@@ -12,4 +12,5 @@ public record ArticlePostDto(
     string Summary,
     [Required]
     string Content,
-    string? CoverPath);
+    string? CoverPath,
+    string[] Keywords);

@@ -1,3 +1,4 @@
+using System.Security.Permissions;
 using FinisServer.Interfaces;
 using FinisServer.Models.Enums;
 
@@ -73,6 +74,8 @@ public class User : IAuditEntity
     /// </summary>
     public DateTimeOffset LastActiveTimeOffset { get; set; }
 
+    public string SecurityQuestion { get; set; }
+    public string SecurityAnswerHash { get; set; }
     public int ViewCount { get; set; } = 0;
     public int LikeCount { get; set; } = 0;
     public int BookmarkCount { get; set; } = 0;

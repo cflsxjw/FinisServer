@@ -9,7 +9,7 @@ using Microsoft.IdentityModel.JsonWebTokens;
 
 namespace FinisServer.Services.Impl;
 
-public class UserService(FinisDbContext finisDbContext, ITokenService tokenService, IFinisHttpContext finisHttpContext) : IUserService
+public class UserService(FinisDbContext finisDbContext, ITokenService tokenService, IFinisHttpContext finisHttpContext, IHistoryService historyService) : IUserService
 {
 
     public async Task<string> SayHelloAsync(int id)
@@ -29,12 +29,38 @@ public class UserService(FinisDbContext finisDbContext, ITokenService tokenServi
             Email = userRegisterDto.Email,
             Role = UserRole.User,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(userRegisterDto.Password),
-            Avatar = "DefaultAvatar.jpeg"
+            Avatar = "DefaultAvatar.jpeg",
+            SecurityQuestion = userRegisterDto.SecurityQuestion,
+            SecurityAnswerHash = BCrypt.Net.BCrypt.HashPassword(userRegisterDto.SecurityAnswer)
         };
         finisDbContext.Add(newUser);
         await finisDbContext.SaveChangesAsync();
     }
+    
+    public async Task FollowUserAsync(int id)
+    {
+        var currentUserId = finisHttpContext.GetRequestUserId() ?? throw new AuthenticationException();
+        if (currentUserId == id)
+        {
+            throw new BusinessException("不能关注自己");
+        }
 
+        var record = await finisDbContext.UserFollowRecords
+            .FirstOrDefaultAsync(r => r.UserId == currentUserId && r.FollowedUserId == id);
+
+        if (record != null)
+        {
+            finisDbContext.UserFollowRecords.Remove(record);
+        }
+        else
+        {
+            var targetUser = await finisDbContext.Users.FirstOrDefaultAsync(u => u.Id == id)
+                ?? throw new ResourceNotFoundException("目标用户不存在");
+
+            finisDbContext.UserFollowRecords.Add(new UserFollowRecord { UserId = currentUserId, FollowedUserId = id });
+        }
+        await finisDbContext.SaveChangesAsync();
+    }
     public async Task<string> LoginAsync(UserLoginDto userLoginDto)
     {
         User user = await finisDbContext.Users
@@ -55,15 +81,40 @@ public class UserService(FinisDbContext finisDbContext, ITokenService tokenServi
             .FirstOrDefaultAsync(u => u.Id == id)
             ?? throw new ResourceNotFoundException("用户不存在");
         var dto = new UserInfoDto(
+            Id: user.Id,
             Name: user.Name,
             Description: user.Description ?? string.Empty,
             ViewCount:  user.ViewCount,
             LikeCount: user.LikeCount,
             ArticleCount:  user.ArticleCount,
+            BookmarkCount: user.BookmarkCount,
             Avatar: user.Avatar);
         return dto;
     }
+    public async Task RecoveryAsync(PasswordRecoveryDto passwordRecoveryDto)
+    {
+        var user = await finisDbContext.Users
+                    .Where(u => u.Name == passwordRecoveryDto.Username)
+                    .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("用户不存在");
+        if (BCrypt.Net.BCrypt.Verify(passwordRecoveryDto.Answer, user.SecurityAnswerHash))
+        {
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(passwordRecoveryDto.Password);
+        }
+        else
+        {
+            throw new OperationNotAllowedException("验证失败");
+        }
+        await finisDbContext.SaveChangesAsync();
+    }
 
+    public async Task<bool> HasFollowUserAsync(int id)
+    {
+        var userid = finisHttpContext.GetRequestUserId();
+        var record = await finisDbContext.UserFollowRecords
+                        .Where(r => r.UserId == userid && r.FollowedUserId == id)
+                        .FirstOrDefaultAsync();
+        return record != null;
+    }
     public async Task<UserSettingDto> GetUserSettingAsync()
     {
         var requestUserId = finisHttpContext.GetRequestUserId();
@@ -84,5 +135,21 @@ public class UserService(FinisDbContext finisDbContext, ITokenService tokenServi
         user.Description = userSettingDto.Description ?? user.Description;
         user.Email = userSettingDto.Email;
         await finisDbContext.SaveChangesAsync();
+    }
+
+    public async Task<List<int>> GetHistory()
+    {
+        int userId = finisHttpContext.GetRequestUserId() ?? throw new BusinessException("用户不存在");
+        var articles = await historyService.GetHistoryAsync(userId);
+        return articles;
+    }
+
+    public async Task<string> GetSecurityQuestion(string username)
+    {
+        var question = await finisDbContext.Users
+                    .Where(u => u.Name == username)
+                    .Select(u => u.SecurityQuestion)
+                    .FirstOrDefaultAsync() ?? throw new ResourceNotFoundException("用户不存在");
+        return question;
     }
 }

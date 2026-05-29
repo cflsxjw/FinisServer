@@ -14,14 +14,14 @@ namespace FinisServer.Controllers
         public async Task GetResponseFromSSM([FromBody] ChatRequestDto chatRequestDto)
         {
             var context = httpContextAccessor.HttpContext ?? throw new HttpContextException();
-            await qwenService.GetResponceFromSSM(context, chatRequestDto.Messages, chatRequestDto.EnableRag);
+            await qwenService.GetResponseFromSSM(context, chatRequestDto.Messages, chatRequestDto.EnableRag);
         }
 
         [HttpPost("chat_with_article")]
         public async Task GetResponseFromSSM([FromBody] ChatWithArticleRequestDto chatWithArticleRequestDto)
         {
             var context = httpContextAccessor.HttpContext ?? throw new HttpContextException();
-            await qwenService.GetResponceFromSSMWithArticle(context, chatWithArticleRequestDto.Messages, chatWithArticleRequestDto.EnableRag, chatWithArticleRequestDto.ArticleId);
+            await qwenService.GetResponseFromSSMWithArticle(context, chatWithArticleRequestDto.Messages, chatWithArticleRequestDto.EnableRag, chatWithArticleRequestDto.ArticleId);
         }
     }
 }

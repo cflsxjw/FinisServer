@@ -8,4 +8,9 @@ public record UserRegisterDto(
     [Required]
     string Email,
     [Required]
-    string Password);
+    string Password,
+    [Required]
+    string SecurityQuestion,
+    [Required]
+    string SecurityAnswer
+    );

@@ -10,6 +10,7 @@ public class Comment
     public int ArticleId { get; set; }
     public int? RootCommentId { get; set; }
     public int? ReplyToUserId { get; set; }
+    public bool IsDeletedByAdmin { get; set; } = false;
     public DateTimeOffset CreatedTimeOffset { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedTimeOffset { get; set; } = DateTimeOffset.UtcNow;
     public virtual User Author { get; set; } = null!;

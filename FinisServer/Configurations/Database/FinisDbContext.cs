@@ -15,10 +15,20 @@ public class FinisDbContext(DbContextOptions<FinisDbContext> options) : DbContex
     public DbSet<ArticleLikeRecord> ArticleLikeRecords { get; set; }
     public DbSet<ArticleBookmarkRecord> ArticleBookmarkRecords { get; set; }
     public DbSet<CommentLikeRecord> CommentLikeRecords { get; set; }
+    public DbSet<Tag> Tags { get; set; }
+    public DbSet<UserFollowRecord> UserFollowRecords { get; set; }
+    public DbSet<SiteNotification> SiteNotifications { get; set; }
+    public DbSet<ReportRecord> ReportRecords { get; set; }
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.HasPostgresExtension("vector");
+        modelBuilder.HasPostgresExtension("pg_trgm");
+        modelBuilder.HasPostgresExtension("pg_search");
+
         // Entities 定义
         modelBuilder.Entity<User>(entity =>
         {
@@ -68,10 +78,10 @@ public class FinisDbContext(DbContextOptions<FinisDbContext> options) : DbContex
                 .ValueGeneratedOnAdd();
             entity.Property(u => u.Title)
                 .IsRequired()
-                .HasMaxLength(64);
+                .HasMaxLength(128);
             entity.Property(u => u.Summary)
                 .IsRequired()
-                .HasMaxLength(128);
+                .HasMaxLength(256);
             entity.Property(u => u.Category)
                 .IsRequired()
                 .HasConversion<string>();
@@ -83,6 +93,18 @@ public class FinisDbContext(DbContextOptions<FinisDbContext> options) : DbContex
                 .IsRequired();
             entity.Property(u => u.CoverPath)
                 .HasMaxLength(256);
+            entity.Property(u => u.Keywords)
+                .IsRequired();
+            
+            modelBuilder.Entity<Article>()
+                .HasIndex(a => a.Title)
+                .HasMethod("gin")
+                .HasOperators("gin_trgm_ops");
+            
+            entity.HasMany(u => u.ArticleVectors)
+                .WithOne(u => u.ParentArticle)
+                .HasForeignKey(u => u.ParentArticleId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
         modelBuilder.Entity<ArticleContent>(entity =>
         {
@@ -98,6 +120,15 @@ public class FinisDbContext(DbContextOptions<FinisDbContext> options) : DbContex
                 .HasMaxLength(65535)
                 .HasColumnType("TEXT");
             entity.HasIndex(u => u.ArticleId);
+            entity.HasIndex(a => new { a.ArticleId, a.Content }, "IX_article_content_search")
+            .HasMethod("bm25")
+            .HasStorageParameter("key_field", "ArticleId")
+            .HasStorageParameter("text_fields", @"{
+                ""Content"": {
+                    ""tokenizer"": { ""type"": ""jieba"", ""mode"": ""search"" },
+                    ""record"": ""position""
+                }
+            }");
         });
         modelBuilder.Entity<Comment>(entity =>
         {
@@ -136,6 +167,15 @@ public class FinisDbContext(DbContextOptions<FinisDbContext> options) : DbContex
             entity.Property(u => u.Embedding)
                 .IsRequired()
                 .HasColumnType("vector(1024)");
+            entity.HasIndex(a => new { a.Id, a.Content }, "IX_article_content_search")
+            .HasMethod("bm25")
+            .HasStorageParameter("key_field", "Id")
+            .HasStorageParameter("text_fields", @"{
+                ""Content"": {
+                    ""tokenizer"": { ""type"": ""jieba"", ""mode"": ""search"" },
+                    ""record"": ""position""
+                }
+            }");
         });
         modelBuilder.Entity<ArticleLikeRecord>(entity =>
         {
@@ -145,7 +185,7 @@ public class FinisDbContext(DbContextOptions<FinisDbContext> options) : DbContex
             entity.HasKey(u => u.Id);
             // 字段属性
             entity.Property(u => u.Id)
-               .ValueGeneratedOnAdd();
+                .ValueGeneratedOnAdd();
             entity.Property(u => u.ArticleId)
                 .IsRequired();
             entity.Property(u => u.UserId)
@@ -159,7 +199,7 @@ public class FinisDbContext(DbContextOptions<FinisDbContext> options) : DbContex
             entity.HasKey(u => u.Id);
             // 字段属性
             entity.Property(u => u.Id)
-               .ValueGeneratedOnAdd();
+                .ValueGeneratedOnAdd();
             entity.Property(u => u.ArticleId)
                 .IsRequired();
             entity.Property(u => u.UserId)
@@ -179,6 +219,66 @@ public class FinisDbContext(DbContextOptions<FinisDbContext> options) : DbContex
             entity.Property(u => u.UserId)
                 .IsRequired();
         });
+
+        modelBuilder.Entity<Tag>(entity =>
+        {
+            entity.ToTable("tag");
+            entity.HasKey(u => u.Id);
+            // 字段属性
+            entity.Property(u => u.Id)
+                .ValueGeneratedOnAdd();
+            entity.Property(u => u.Name)
+                .IsRequired();
+        });
+
+        modelBuilder.Entity<UserFollowRecord>(entity =>
+        {
+            entity.ToTable("user_follow_record");
+            entity.HasKey(u => u.Id);
+            // 字段属性
+            entity.Property(u => u.Id)
+                .ValueGeneratedOnAdd();
+            entity.Property(u => u.UserId)
+                .IsRequired();
+            entity.Property(u => u.FollowedUserId)
+                .IsRequired();
+        });
+        modelBuilder.Entity<SiteNotification>(entity =>
+        {
+            entity.ToTable("site_notification");
+            entity.HasKey(u => u.Id);
+            // 字段属性
+            entity.Property(u => u.Id)
+                .ValueGeneratedOnAdd();
+            entity.Property(u => u.Title)
+                .HasMaxLength(64)
+                .IsRequired();
+            entity.Property(u => u.Content)
+                .HasMaxLength(2048)
+                .IsRequired();
+            entity.Property(u => u.AuthorId)
+                .IsRequired();
+        });
+        modelBuilder.Entity<ReportRecord>(entity =>
+        {
+            entity.ToTable("report_record");
+            entity.HasKey(u => u.Id);
+            entity.Property(u => u.Id)
+                .ValueGeneratedOnAdd();
+            entity.Property(u => u.ReportType)
+                .IsRequired()
+                .HasConversion<string>();
+            entity.Property(u => u.IsDone)
+                .IsRequired();
+            entity.Property(u => u.Reason)
+                .HasMaxLength(256)
+                .IsRequired();
+            entity.Property(u => u.AdminId);
+            entity.Property(u => u.TargetIdentifierId)
+                .IsRequired();
+            entity.Property(u => u.ReporterId)
+                .IsRequired();
+        });
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -186,4 +286,6 @@ public class FinisDbContext(DbContextOptions<FinisDbContext> options) : DbContex
         base.OnConfiguring(optionsBuilder);
         optionsBuilder.AddInterceptors(new TimeInterceptor());
     }
+
+    
 }

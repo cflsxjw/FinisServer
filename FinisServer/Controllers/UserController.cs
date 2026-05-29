@@ -23,6 +23,13 @@ public class UserController(IUserService userService) : ControllerBase
         await userService.RegisterAsync(userRegisterDto);
         return Result.Success("注册成功");
     }
+
+    [HttpPost("recovery_password")]
+    public async Task<Result> RecoveryPassword([FromBody] PasswordRecoveryDto passwordRecoveryDto)
+    {
+        await userService.RecoveryAsync(passwordRecoveryDto);
+        return Result.Success("重置成功");
+    }
     
     [HttpPost("login")]
     public async Task<Result<TokenDto>> Login([FromBody] UserLoginDto userLoginDto)
@@ -68,5 +75,35 @@ public class UserController(IUserService userService) : ControllerBase
     {
         await userService.UpdateUserSettingAsync(userSettingDto);
         return Result.Success();
+    }
+
+    [Authorize]
+    [HttpPost("follow/{id:int}")]
+    public async Task<Result> FollowUser(int id)
+    {
+        await userService.FollowUserAsync(id);
+        return Result.Success();
+    }
+
+    [Authorize]
+    [HttpGet("has_follow/{id:int}")]
+    public async Task<Result<bool>> HasFollowUser(int id)
+    {
+        return Result<bool>.Success(await userService.HasFollowUserAsync(id));
+    }
+
+    [Authorize]
+    [HttpGet("history")]
+    public async Task<Result<List<int>>> GetHistory()
+    {
+        var articles = await userService.GetHistory();
+        return Result<List<int>>.Success(articles);
+    }
+
+    [HttpGet("security_question")]
+    public async Task<Result<string>> GetSecurityQuestion(string username)
+    {
+        var question = await userService.GetSecurityQuestion(username);
+        return Result<string>.Success(question);
     }
 }

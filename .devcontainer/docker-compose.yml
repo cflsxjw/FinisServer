@@ -6,12 +6,11 @@ services:
       - ..:/workspace
     ports:
       - 8080:8080
-    command: 
-      - sleep infinity
+    command: ["sh", "-c", "sleep infinity"]
     networks:
       - finis-network
   postgres:
-    image: pgvector/pgvector:pg18-trixie
+    image: paradedb/paradedb:latest-pg18
     volumes:
       - postgres-data:/var/lib/postgresql
     ports:

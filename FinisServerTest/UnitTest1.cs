@@ -5,9 +5,14 @@ using FinisServer.Configurations.Options;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Microsoft.EntityFrameworkCore;
-using FinisServer.Models.Entities;
-using Pgvector;
+using Markdig;
+using System.Diagnostics.Tracing;
 using Pgvector.EntityFrameworkCore;
+using Pgvector;
+using System.Text.Json;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
+using System.Text.Json.Nodes;
 
 namespace FinisServerTest;
 
@@ -22,11 +27,11 @@ public class UnitTest1(ITestOutputHelper outputHelper)
         var qwenOptions = _configuration.GetSection("Qwen").Get<QwenOptions>();
         Assert.NotNull(qwenOptions);
         var options = Options.Create(qwenOptions);
-        IQwenService qwenService = new QwenService(options);
+        IQwenService qwenService = new QwenService(options, getFinisDbContext());
         return qwenService;
     };
 
-    private readonly Func<FinisDbContext> getFinisDbContext = () =>
+    private static readonly Func<FinisDbContext> getFinisDbContext = () =>
     {
         var postgresOptions = _configuration.GetSection("Postgres").Get<PostgresOptions>();
         var optionsBuilder = new DbContextOptionsBuilder<FinisDbContext>();
@@ -34,60 +39,104 @@ public class UnitTest1(ITestOutputHelper outputHelper)
         return new FinisDbContext(optionsBuilder.Options);
     };
 
-    [Fact]
-    public async Task TextEmbeddingTestAsync()
+    private readonly HttpClient _httpClient = CreateConfiguredClient();
+
+    private static HttpClient CreateConfiguredClient()
     {
-        var qwenService = getQwenService();
-        var array = await qwenService.EmbeddingTexts([".net11"]);
-        Assert.NotNull(array);
-        outputHelper.WriteLine($"向量维度: {array[0].Count()}");
-        outputHelper.WriteLine($"向量内容: [{string.Join(',', array)}]");
+        var qwenOptions = _configuration.GetSection("Qwen").Get<QwenOptions>();
+        string apiKey = qwenOptions.ApiKey;
+        var client = new HttpClient();
+        client.BaseAddress = new Uri("https://dashscope.aliyuncs.com/api/v1/services/");
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+        return client;
     }
 
     [Fact]
-    public async Task VectorDbTestAsync()
+    public void MdToPlainTextTest()
     {
-        string[] content = [
-            "[H3]:GitHub vs GitLab 简要对比>GitHub 和 GitLab 都是基于 Git 的托管平台，核心功能相似，但侧重点不同。GitHub 拥有全球最大的开源社区和更成熟的生态系统（如 Actions），通常是开源项目和个人开发者的首选。GitLab 则以提供完整的一站式 DevOps 平台著称，其内置的 CI/CD 功能极为强大，且支持私有化部署，更受中大型企业青睐。| 特性 | GitHub | GitLab || :--- | :--- | :--- || 核心定位 | 侧重社区、开源与代码托管 | 侧重一站式 DevOps 平台 || CI/CD | 通过 GitHub Actions 提供 | 内置 CI/CD，配置简单且强大 || 私有化部署 | 支持 (Enterprise 版) | 支持 (社区版/企业版)，更普遍 || 开源社区 | 极其庞大，开发者首选 | 相对较小 || 优势场景 | 开源项目、生态集成 | 企业内部开发、私有流水线 |"
-        ];
-        var context = getFinisDbContext();
-        var qwenService = getQwenService();
-        var vectorArrays = await qwenService.EmbeddingTexts(content);
-        Assert.NotNull(vectorArrays);
-        for (int i = 0; i < vectorArrays.Count(); i++)
+        string str = Markdown.ToPlainText("# RAG 检索技术方案对比\n\n在构建知识库（如 Finis 平台）时，选择合适的检索策略至关重要。以下是三种主流方案的对比：\n\n## 核心技术对比表\n\n| 维度 | 稀疏检索 (BM25) | 稠密检索 (Embedding) | 混合检索 (Hybrid) |\n| :--- | :--- | :--- | :--- |\n| **实现原理** | 关键词频率统计 | 语义向量空间距离 | 多路召回 + 重排序 (RRF) |\n| **擅长场景** | 专有名词、代码、人名 | 模糊意图、近义词理解 | 工业级生产环境、全场景 |\n| **对 MD 标签** | 敏感（建议预处理清洗） | 不敏感（向量能忽略噪音） | 鲁棒性最高 |\n| **计算开销** | 极低（倒排索引） | 高（需要 GPU 推理） | 中等（双路计算） |\n\n## 技术建议\n1. **数据量较小 ( < 5000 篇)**：优先考虑 Lucene.Net 实现的 BM25，开发成本最低。\n2. **长文本处理**：建议将 Markdown 表格内容提取为纯文本，防止 `|` 和 `-` 符号干扰 N-gram 的权重计算。\n3. **检索增强**：召回阶段将原始 Markdown 喂给 LLM，生成阶段将纯文本喂给检索器。\n\n---\n*注：本表格由 FinisServer 自动化构建模块生成预览。*");
+        outputHelper.WriteLine(str);
+    }
+
+    public async Task<IList<float[]>> EmbeddingTextsAsync(IList<string> chunks)
+    {
+        const int batchSize = 10;
+        IList<float[]> result = [];
+        for (int i = 0; i < chunks.Count; i += batchSize)
         {
-            context.ArticleVectors.Add(new ArticleVector
+            var batch = chunks.Skip(i).Take(batchSize).ToList();
+            var requestData = new
             {
-                Content = content[i],
-                Embedding = new Vector(vectorArrays[i])
-            });
+                model = "text-embedding-v4",
+                input = new { texts = batch },
+                parameters = new { dimension = 1024 }
+            };
+
+            var response = await _httpClient.PostAsJsonAsync(
+                "embeddings/text-embedding/text-embedding",
+                requestData,
+                new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }
+            );
+            if (!response.IsSuccessStatusCode)
+            {
+                // 读取服务器返回的详细错误 JSON
+                string errorContent = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"错误详情: {errorContent}");
+            }
+            response.EnsureSuccessStatusCode();
+            var json = await response.Content.ReadFromJsonAsync<JsonObject>();
+            var embeddings = json?["output"]?["embeddings"]?.AsArray() ?? []; ;
+            foreach (var item in embeddings)
+            {
+                var embedding = item?["embedding"]?.Deserialize<float[]>();
+                if (embedding != null)
+                {
+                    result.Add(embedding);
+                }
+            }
+        }
+        return result;
+    }
+    [Fact]
+    public async Task RagQueryAsync()
+    {
+        string[] keywords = ["如何优化手机性能"];
+        IList<float[]> vectorArray = await EmbeddingTextsAsync(keywords);
+        var finisDbContext = getFinisDbContext();
+
+        // 2. 修改临时列表的定义为 int
+        var rawResults = new List<(string Content, int Id)>();
+
+        for (int i = 0; i < keywords.Length; i++)
+        {
+            // 向量检索
+            var vList = await finisDbContext.ArticleVectors
+                .AsNoTracking()
+                .OrderBy(d => d.Embedding.CosineDistance(new Vector(vectorArray[i])))
+                .Take(30)
+                .Select(d => new { d.Content, d.ParentArticleId }) // 这里的 ParentArticleId 是 int
+                .ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
+
+            // 显式转为元组存入列表
+            rawResults.AddRange(vList.Select(x => (x.Content, x.ParentArticleId)));
+
+            // 关键词检索
+            var kList = await finisDbContext.ArticleVectors
+                .FromSqlInterpolated($"SELECT * , paradedb.score(\"Id\") AS score FROM article_vector WHERE \"Content\" ||| {keywords[i]} ORDER BY score DESC")
+                .Include(d => d.ParentArticle)
+                .AsNoTracking()
+                .Where(d => !d.ParentArticle.IsDeletedByAdmin)
+                .Take(30)
+                .Select(d => new { d.Content, d.ParentArticleId })
+                .ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
+
+            rawResults.AddRange(kList.Select(x => (x.Content, x.ParentArticleId)));
         }
 
-        await context.SaveChangesAsync(TestContext.Current.CancellationToken);
-    }
+        // 3. 统计结果（类型均为 int）
+        int[] distinctIds = rawResults.Select(x => x.Id).Distinct().ToArray();
+        string[] distinctContents = rawResults.Select(x => x.Content).Distinct().ToArray();
 
-    [Fact]
-    public async Task ArticleChunkingAsync()
-    {
-        var qwenService = getQwenService();
-        string content = "### GitHub vs GitLab 简要对比\n\nGitHub 和 GitLab 都是基于 Git 的托管平台，核心功能相似，但侧重点不同。GitHub 拥有全球最大的开源社区和更成熟的生态系统（如 Actions），通常是开源项目和个人开发者的首选。GitLab 则以提供完整的一站式 DevOps 平台著称，其内置的 CI/CD 功能极为强大，且支持私有化部署，更受中大型企业青睐。\n\n| 特性 | GitHub | GitLab |\n| :--- | :--- | :--- |\n| **核心定位** | 侧重社区、开源与代码托管 | 侧重一站式 DevOps 平台 |\n| **CI/CD** | 通过 GitHub Actions 提供 | 内置 CI/CD，配置简单且强大 |\n| **私有化部署** | 支持 (Enterprise 版) | 支持 (社区版/企业版)，更普遍 |\n| **开源社区** | 极其庞大，开发者首选 | 相对较小 |\n| **优势场景** | 开源项目、生态集成 | 企业内部开发、私有流水线 |";
-        var contentList = await qwenService.ArticleChunkingAsync(content);
-        outputHelper.WriteLine(string.Join("\n", contentList));
-    }
-    [Fact]
-    public async Task SearchQueryAsync()
-    {
-        var context = getFinisDbContext();
-        IQwenService qwenService = getQwenService();
-        string[] query = ["Github 的特点"];
-        var vectorArrays = await qwenService.EmbeddingTexts(query);
-        var result = await context.ArticleVectors
-            .AsNoTracking()
-            .OrderBy(d => d.Embedding.CosineDistance(new Vector(vectorArrays[0])))
-            .Where(d => d.Embedding.CosineDistance(new Vector(vectorArrays[0])) <= 0.35)
-            .Take(5)
-            .Select(d => d.Content)
-            .ToListAsync(cancellationToken: TestContext.Current.CancellationToken);
-        outputHelper.WriteLine(string.Join("\n", result));
+        outputHelper.WriteLine(string.Join(',', distinctContents));
     }
 }
